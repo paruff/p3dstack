@@ -1,0 +1,108 @@
+name: Service Addition Request
+description: Request to add a new service to the platform
+title: "[SERVICE]: "
+labels: ["enhancement", "service"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for contributing to P3DStack! Please fill out this form to propose a new service.
+
+  - type: input
+    id: service-name
+    attributes:
+      label: Service Name
+      description: What is the name of the service?
+      placeholder: e.g., GitLab, Redis, PostgreSQL
+    validations:
+      required: true
+
+  - type: input
+    id: docker-image
+    attributes:
+      label: Docker Image
+      description: Which Docker image should be used?
+      placeholder: e.g., gitlab/gitlab-ce:latest
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Why should this service be added? What problem does it solve?
+      placeholder: Describe the use case and benefits
+    validations:
+      required: true
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Proposed Configuration
+      description: Provide a draft YAML configuration (if available)
+      render: yaml
+      placeholder: |
+        services:
+          your-service:
+            image: your/image:version
+            ports:
+              - "PORT:PORT"
+
+  - type: checkboxes
+    id: production-features
+    attributes:
+      label: Production-Ready Features
+      description: Confirm the service will include these features
+      options:
+        - label: Health check configuration
+          required: true
+        - label: Restart policy
+          required: true
+        - label: Resource limits (CPU/Memory)
+          required: true
+        - label: OTEL instrumentation
+          required: true
+        - label: Logging configuration
+          required: true
+        - label: Container name
+          required: true
+
+  - type: input
+    id: port
+    attributes:
+      label: Port Number
+      description: Which port should the service use? (Check for conflicts)
+      placeholder: e.g., 5432
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Does this service depend on other services?
+      placeholder: e.g., Requires PostgreSQL database
+
+  - type: textarea
+    id: volumes
+    attributes:
+      label: Volume Requirements
+      description: What data needs to be persisted?
+      placeholder: e.g., Database data, configuration files, logs
+
+  - type: checkboxes
+    id: documentation
+    attributes:
+      label: Documentation
+      description: Confirm you will provide documentation
+      options:
+        - label: I will update README.md
+          required: true
+        - label: I will update PRODUCTION.md with operational details
+          required: true
+        - label: I will include service-specific configuration notes
+          required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that would be helpful?

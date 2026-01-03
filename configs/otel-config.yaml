@@ -1,0 +1,76 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  # Export metrics to Prometheus
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: "otel"
+    send_timestamps: true
+    metric_expiration: 180m
+  
+  # Export logs to OpenSearch
+  opensearch:
+    endpoints: ["http://opensearch:9200"]
+    logs_index: "otel-logs"
+    http:
+      timeout: 30s
+  
+  # Export traces to Tempo
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  
+  # Debug logging
+  logging:
+    loglevel: debug
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+  
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+  
+  resource:
+    attributes:
+      - key: environment
+        value: development
+        action: upsert
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+service:
+  extensions: [health_check, pprof]
+  
+  pipelines:
+    # Metrics pipeline: OTLP -> Prometheus
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [prometheus, logging]
+    
+    # Traces pipeline: OTLP -> Tempo
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [otlp/tempo, logging]
+    
+    # Logs pipeline: OTLP -> OpenSearch
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resource]
+      exporters: [opensearch, logging]

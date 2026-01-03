@@ -1,0 +1,90 @@
+version: "3.9"
+
+networks:
+  dev-net:
+    driver: bridge
+
+volumes:
+  # Core Services
+  jenkins_data:
+  sonarqube_data:
+  sonarqube_db:
+  sonarqube_logs:
+  sonarqube_extensions:
+  
+  # Observability
+  opensearch_data:
+  opensearch_logs:
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+  tempo_data:
+  
+  # Collaboration
+  mattermost_data:
+  mattermost_config:
+  mattermost_logs:
+  mattermost_db:
+  focalboard_data:
+  
+  # Infrastructure
+  harbor_data:
+  vault_data:
+  vault_logs:
+  che_data:
+
+services:
+  traefik:
+    image: traefik:v2.11
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+      - "--accesslog=true"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    networks:
+      - dev-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+# Import all service definitions
+# Order matters: dependencies should be loaded before dependents
+include:
+  - services/telemetry.yml      # OTEL Collector (base dependency)
+  - services/opensearch.yml     # Log storage
+  - services/tempo.yml          # Trace storage
+  - services/prometheus.yml     # Metrics storage
+  - services/grafana.yml        # Visualization (depends on above)
+  - services/alertmanager.yml   # Alerting (depends on prometheus)
+  - services/jenkins.yml        # CI/CD
+  - services/sonarqube.yml      # Code quality
+  - services/harbor.yml         # Container registry
+  - services/vault.yml          # Secrets management
+  - services/selenium-grid.yml  # Browser automation
+  - services/backstage.yml      # Developer portal
+  - services/eclipse-che.yml    # Cloud IDE
+  - services/mattermost.yml     # Team collaboration
+  - services/focalboard.yml     # Project management

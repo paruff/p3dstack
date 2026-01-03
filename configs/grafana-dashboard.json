@@ -1,0 +1,51 @@
+{
+  "dashboard": {
+    "title": "Fawkes Dev Platform Monitoring",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "CPU Usage per Service",
+        "targets": [
+          {
+            "expr": "rate(container_cpu_usage_seconds_total{image!=\"\",container!=\"\"}[1m])",
+            "legendFormat": "{{container}}"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Memory Usage per Service",
+        "targets": [
+          {
+            "expr": "container_memory_usage_bytes{image!=\"\",container!=\"\"}",
+            "legendFormat": "{{container}}"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Disk I/O per Service",
+        "targets": [
+          {
+            "expr": "rate(container_fs_reads_bytes_total{image!=\"\",container!=\"\"}[1m])",
+            "legendFormat": "{{container}} Reads"
+          },
+          {
+            "expr": "rate(container_fs_writes_bytes_total{image!=\"\",container!=\"\"}[1m])",
+            "legendFormat": "{{container}} Writes"
+          }
+        ]
+      },
+      {
+        "type": "table",
+        "title": "Container Restarts",
+        "targets": [
+          {
+            "expr": "container_last_seen{image!=\"\",container!=\"\"}",
+            "legendFormat": "{{container}}"
+          }
+        ]
+      }
+    ]
+  }
+}

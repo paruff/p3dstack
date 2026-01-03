@@ -1,0 +1,41 @@
+services:
+  eclipse-che:
+    image: eclipse/che-server:latest
+    container_name: eclipse-che
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=eclipse-che
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_TRACES_EXPORTER=otlp
+      - CHE_HOST=localhost
+    volumes:
+      - che_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/system/state || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '1.0'
+          memory: 1G
+    depends_on:
+      otel-collector:
+        condition: service_healthy
+    networks:
+      - dev-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
